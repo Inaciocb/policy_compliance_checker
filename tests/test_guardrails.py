@@ -1,4 +1,6 @@
 import sys
+from datetime import date
+from decimal import Decimal
 from pathlib import Path
 
 # Adiciona o diretório raiz do projeto ao sys.path
@@ -12,7 +14,7 @@ from app.schemas.expense import (
     ComplianceStatus,
 )
 
-def test_guardrails_flag_prohibited_items():
+def test_guardrails_flag_prohibited_items() -> None:
     report = EmployeeExpenseReport(
         employee_name="Inácio Buemo",
         employee_email="inacio@example.com",
@@ -22,14 +24,15 @@ def test_guardrails_flag_prohibited_items():
             ExpenseItem(
                 description="Dinner with Beer",
                 category=ExpenseCategory.MEAL,
-                amount=35.0,
+                amount=Decimal("35.00"),
+                expense_date=date(2026, 9, 24),
                 has_itemized_receipt=True,
                 contains_alcohol=True,
             ),
             ExpenseItem(
                 description="Hotel Room",
                 category=ExpenseCategory.LODGING,
-                amount=180.0,
+                amount=Decimal("180.00"),
                 has_itemized_receipt=True,
                 contains_alcohol=False,
             ),
@@ -40,7 +43,7 @@ def test_guardrails_flag_prohibited_items():
     result = evaluator.evaluate_report(report)
 
     assert result.overall_status == ComplianceStatus.NEEDS_REVIEW
-    assert result.total_compliant == 180.0
+    assert result.total_compliant == Decimal("180.00")
     assert "Alcoholic beverages are strictly prohibited" in result.itemized_audit[0].violations[0]
     print("\nGuardrail test passed successfully!")
 
